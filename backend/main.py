@@ -1,3 +1,35 @@
+"""
+NOVA Movie Hub — FastAPI backend
+Run from the backend directory: uvicorn main:app --host 0.0.0.0 --port $PORT
+"""
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+_backend_dir = Path(__file__).resolve().parent
+load_dotenv(_backend_dir.parent / ".env")
+load_dotenv(_backend_dir / ".env")
+load_dotenv()
+
+from routes import auth, catalog, operations, watchlist, ai, health  # noqa: E402
+
+app = FastAPI(
+    title="NOVA Movie Hub API",
+    version="0.1.0",
+    description="Catalog + AI discovery + operation/reward sessions for Telegram Mini App",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
