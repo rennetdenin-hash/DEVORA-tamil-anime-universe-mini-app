@@ -1,6 +1,6 @@
 """
 NOVA Movie Hub — FastAPI backend
-Run: uvicorn main:app --host 0.0.0.0 --port 8081 --reload
+Run: uvicorn main:app --host 0.0.0.0 --port 8081
 """
 from __future__ import annotations
 
@@ -13,7 +13,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+# Load environment files where they may exist without changing the project structure.
+_backend_dir = Path(__file__).resolve().parent
+_project_root = _backend_dir.parent
+load_dotenv(_project_root / ".env")
+load_dotenv(_backend_dir / ".env")
 load_dotenv()
 
 from routes import auth, catalog, operations, watchlist, ai, health  # noqa: E402
@@ -24,7 +28,6 @@ app = FastAPI(
     description="Catalog + AI discovery + operation/reward sessions for Telegram Mini App",
 )
 
-# Restrict CORS in production to your Mini App origin
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
@@ -40,27 +43,27 @@ app.include_router(ai.router, prefix="/ai", tags=["ai"])
 app.include_router(watchlist.router, prefix="/watchlist", tags=["watchlist"])
 app.include_router(operations.router, prefix="/operations", tags=["operations"])
 
-# Serve the frontend reliably when deployed from the repository root.
-# backend/main.py -> repository root -> frontend/index.html
-_project_root = Path(__file__).resolve().parent.parent
-_frontend = _project_root / "frontend"
-_index_file = _frontend / "index.html"
-
-_frontend_enabled = (
-    os.getenv("SERVE_FRONTEND", "1") == "1"
-    and _index_file.is_file()
+# Locate the original frontend directory without moving or duplicating its files.
+_frontend_candidates = [
+    _project_root / "frontend",
+    _backend_dir / "frontend",
+    Path.cwd() / "frontend",
+    Path.cwd().parent / "frontend",
+]
+_frontend = next(
+    (candidate.resolve() for candidate in _frontend_candidates
+     if (candidate / "index.html").is_file()),
+    None,
 )
+_frontend_enabled = os.getenv("SERVE_FRONTEND", "1") == "1" and _frontend is not None
 
 if _frontend_enabled:
     @app.get("/", include_in_schema=False)
     async def frontend_home():
-        return FileResponse(_index_file)
+        index_file = _frontend / "index.html"
+        return FileResponse(index_file)
 
-    app.mount(
-        "/",
-        StaticFiles(directory=str(_frontend), html=True),
-        name="frontend",
-    )
+    app.mount("/", StaticFiles(directory=str(_frontend), html=True), name="frontend")
 else:
     @app.get("/", include_in_schema=False)
     async def root_status():
@@ -68,14 +71,10 @@ else:
             "status": "online",
             "message": "NOVA Movie Hub API is running",
             "frontend_available": False,
-            "project_root": str(_project_root),
-            "frontend_path": str(_frontend),
-            "index_exists": _index_file.is_file(),
         }
 
 @app.on_event("startup")
 async def startup():
-    # Ensure Mongo indexes if configured
     try:
         from database.sessions import ensure_indexes
         await ensure_indexes()
