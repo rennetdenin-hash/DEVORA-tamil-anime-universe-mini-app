@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <title>NOVA Movie Hub</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="app-header" id="app-header">
+      <div class="brand">
+        <span class="brand-mark">N</span>
+        <div class="brand-text">
+          <strong>NOVA Movie Hub</strong>
+          <small>powered by NOVA Guardian</small>
+        </div>
+      </div>
+      <button type="button" class="icon-btn" id="btn-profile" aria-label="Profile & Settings">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Main content (screens swap here) -->
+    <main class="app-main" id="app-main">
+      <!-- Screens injected by app.js -->
+    </main>
+
+    <!-- Bottom navigation -->
+    <nav class="bottom-nav" id="bottom-nav" role="tablist">
+      <button type="button" class="nav-item active" data-screen="home" aria-label="Home">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5z"/></svg>
+        <span>Home</span>
+      </button>
+      <button type="button" class="nav-item" data-screen="discover" aria-label="Discover">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
+        <span>Discover</span>
+      </button>
+      <button type="button" class="nav-item" data-screen="ai" aria-label="AI Assistant">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg>
+        <span>AI</span>
+      </button>
+      <button type="button" class="nav-item" data-screen="saved" aria-label="Saved">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h10a1 1 0 0 1 1 1v17l-6-3.5L6 21V4a1 1 0 0 1 1-1z"/></svg>
+        <span>Saved</span>
+      </button>
+    </nav>
+
+    <!-- Reward / Operation overlay (hidden by default) -->
+    <div id="reward-overlay" class="reward-overlay hidden" aria-hidden="true">
+      <div class="reward-card">
+        <div class="reward-badge">Reward step</div>
+        <h2 id="reward-title">Unlock required</h2>
+        <p id="reward-desc">This operation needs a short reward interaction before the bot can continue.</p>
+        <div id="reward-status" class="reward-status">Pending</div>
+        <div id="reward-ad-slot" class="reward-ad-slot"></div>
+        <button type="button" class="btn primary" id="btn-watch-ad">Continue</button>
+        <button type="button" class="btn ghost" id="btn-reward-close">Close</button>
+        <p class="reward-note">Movie search and browsing stay free. Only eligible bot operations use this step.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/telegram.js"></script>
+  <script src="scripts/api.js"></script>
+  <script src="scripts/screens.js"></script>
+  <script src="scripts/reward.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>

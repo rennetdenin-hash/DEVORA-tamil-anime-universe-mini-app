@@ -1,0 +1,17 @@
+NOVA Movie Hub — Mini App (works with bot ad_gate)
+==================================================
+1. Copy .env.example → .env (BOT_TOKEN, OPERATION_BOT_SECRET same as bot, MINIAPP_URL)
+2. backend: pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8081
+3. SERVE_FRONTEND=1 serves the UI from the same process
+4. Put on HTTPS → BotFather Web App URL
+5. frontend/scripts/config.js → ADSGRAM_BLOCK_ID, OWNER_IDS, ADMIN_IDS
+
+Ads:
+  required_ads=1 single file, =3 send all / multi
+  Server tracks ads_completed until verified
+  OPERATION_PUBLIC_REWARD=1 allows AdsGram Reward URL without bot secret (or use secret)
+
+Roles:
+  Owner IDs: manage Mini App settings
+  Admin IDs: elevated, skip ads on bot side via ADMINS in bot .env
+  Users: browse + unlock only
