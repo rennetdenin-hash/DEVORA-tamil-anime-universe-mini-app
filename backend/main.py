@@ -44,23 +44,34 @@ app.include_router(operations.router, prefix="/operations", tags=["operations"])
 # backend/main.py -> repository root -> frontend/index.html
 _project_root = Path(__file__).resolve().parent.parent
 _frontend = _project_root / "frontend"
-_frontend_enabled = os.getenv("SERVE_FRONTEND", "1") == "1" and _frontend.is_dir()
+_index_file = _frontend / "index.html"
+
+_frontend_enabled = (
+    os.getenv("SERVE_FRONTEND", "1") == "1"
+    and _index_file.is_file()
+)
 
 if _frontend_enabled:
     @app.get("/", include_in_schema=False)
     async def frontend_home():
-        index_file = _frontend / "index.html"
-        if index_file.is_file():
-            return FileResponse(index_file)
-        return {"detail": "Frontend index.html not found"}
+        return FileResponse(_index_file)
 
-    # Fallback for frontend files (styles/, scripts/, etc.).
-    app.mount("/", StaticFiles(directory=str(_frontend), html=True), name="frontend")
+    app.mount(
+        "/",
+        StaticFiles(directory=str(_frontend), html=True),
+        name="frontend",
+    )
 else:
     @app.get("/", include_in_schema=False)
     async def root_status():
-        return {"status": "online", "message": "NOVA Movie Hub API is running", "frontend_available": False}
-
+        return {
+            "status": "online",
+            "message": "NOVA Movie Hub API is running",
+            "frontend_available": False,
+            "project_root": str(_project_root),
+            "frontend_path": str(_frontend),
+            "index_exists": _index_file.is_file(),
+        }
 
 @app.on_event("startup")
 async def startup():
