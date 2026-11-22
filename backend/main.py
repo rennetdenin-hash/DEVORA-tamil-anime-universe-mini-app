@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 load_dotenv()
@@ -39,10 +40,26 @@ app.include_router(ai.router, prefix="/ai", tags=["ai"])
 app.include_router(watchlist.router, prefix="/watchlist", tags=["watchlist"])
 app.include_router(operations.router, prefix="/operations", tags=["operations"])
 
-# Optional: serve frontend from same process in staging
-_frontend = Path(__file__).resolve().parent.parent / "frontend"
-if _frontend.is_dir() and os.getenv("SERVE_FRONTEND", "1") == "1":
+# Serve the frontend reliably when deployed from the repository root.
+# backend/main.py -> repository root -> frontend/index.html
+_project_root = Path(__file__).resolve().parent.parent
+_frontend = _project_root / "frontend"
+_frontend_enabled = os.getenv("SERVE_FRONTEND", "1") == "1" and _frontend.is_dir()
+
+if _frontend_enabled:
+    @app.get("/", include_in_schema=False)
+    async def frontend_home():
+        index_file = _frontend / "index.html"
+        if index_file.is_file():
+            return FileResponse(index_file)
+        return {"detail": "Frontend index.html not found"}
+
+    # Fallback for frontend files (styles/, scripts/, etc.).
     app.mount("/", StaticFiles(directory=str(_frontend), html=True), name="frontend")
+else:
+    @app.get("/", include_in_schema=False)
+    async def root_status():
+        return {"status": "online", "message": "NOVA Movie Hub API is running", "frontend_available": False}
 
 
 @app.on_event("startup")
